@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="blue">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Directorio de Egresados — Facultad de Derecho | UNCuyo (Prototipo)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B2433;--mute:#5B6678;--line:#DDE2EA;--bg:#F6F7F9}
+[data-theme=blue]{--p:#14284B;--pd:#0C1A33;--a:#0F7B5F;--soft:#E8EEF7}
+[data-theme=green]{--p:#0D4A3A;--pd:#07301F;--a:#1B3A6B;--soft:#E3F0EA}
+body{font-family:'Source Sans 3',system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+.serif{font-family:'Source Serif 4',Georgia,serif}
+.bg-p{background:var(--p)}.bg-pd{background:var(--pd)}.bg-a{background:var(--a)}.bg-soft{background:var(--soft)}
+.tx-p{color:var(--p)}.tx-a{color:var(--a)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.55rem 1rem;border-radius:.5rem;font-weight:600;font-size:.9rem;transition:background .15s,border-color .15s;cursor:pointer}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--pd)}
+.btn-a{background:var(--a);color:#fff}.btn-a:hover{filter:brightness(.92)}
+.btn-o{border:1px solid var(--p);color:var(--p);background:#fff}.btn-o:hover{background:var(--soft)}
+.btn-ghost{color:#fff;border:1px solid rgba(255,255,255,.35)}.btn-ghost:hover{background:rgba(255,255,255,.12)}
+:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+.tab{padding:.5rem .95rem;border-radius:999px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:.92rem;color:var(--mute);cursor:pointer;white-space:nowrap}
+.tab:hover{border-color:var(--p);color:var(--p)}
+.tab[aria-pressed=true]{background:var(--p);border-color:var(--p);color:#fff}
+.tab small{opacity:.7;margin-left:.3rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:.75rem;display:flex;flex-direction:column}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:.4rem;font-size:.8rem;font-weight:600;line-height:1.3}
+.b-g{background:#EEF0F3;color:#3B4557}.b-e{background:#DDF1E8;color:#0B5B43}.b-m{background:#DCE7F7;color:#17407A}.b-d{background:#F1E6C8;color:#6B4D07}
+.field{width:100%;border:1px solid var(--line);border-radius:.5rem;padding:.55rem .75rem;background:#fff}
+.field:focus{outline:2px solid var(--a);border-color:var(--a)}
+label.lb{display:block;font-weight:600;font-size:.88rem;margin-bottom:.25rem}
+.modal{position:fixed;inset:0;background:rgba(12,26,51,.6);display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;z-index:50}
+.modal.open{display:flex}
+.sheet{background:#fff;border-radius:.75rem;width:100%;max-width:40rem;margin:2rem 0;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.paper{background:#fff;border:1px solid var(--line);box-shadow:0 2px 12px rgba(0,0,0,.08);padding:1.75rem}
+#toast{position:fixed;left:50%;bottom:1.25rem;transform:translate(-50%,150%);transition:transform .3s;z-index:60;max-width:92vw;width:34rem}
+#toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<div class="bg-pd text-white text-sm text-center px-4 py-2">
+  <i class="fa-solid fa-circle-info mr-1"></i> Vista previa de demostración: los datos son ficticios y no se guardan.
+</div>
+
+<header class="bg-white border-b" style="border-color:var(--line)">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3 justify-between">
+    <div class="flex items-center gap-3">
+      <div class="bg-p text-white w-11 h-11 rounded-lg grid place-items-center text-xl"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="leading-tight">
+        <div class="serif font-semibold text-lg tx-p">Directorio de Egresados</div>
+        <div class="text-sm" style="color:var(--mute)">Facultad de Derecho | UNCuyo</div>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <label class="sr-only" for="theme">Tema de color</label>
+      <select id="theme" class="field !w-auto !py-1.5 text-sm" aria-label="Tema de color">
+        <option value="blue">Tema Azul Institucional</option>
+        <option value="green">Tema Verde Secretaría</option>
+      </select>
+      <button id="adminBtn" class="btn btn-o !py-1.5 text-sm" aria-pressed="false"><i class="fa-solid fa-user-shield"></i><span>Acceso Admin (Demo)</span></button>
+      <button id="createBtn" class="btn btn-a"><i class="fa-solid fa-plus"></i> Crear mi perfil (Vista previa)</button>
+    </div>
+  </div>
+</header>
+
+<section class="bg-p text-white">
+  <div class="max-w-6xl mx-auto px-4 py-10 md:py-14">
+    <h1 class="serif text-3xl md:text-4xl font-bold max-w-2xl leading-tight">Abogadas y abogados formados en la Facultad de Derecho de la UNCuyo</h1>
+    <p class="mt-3 max-w-xl text-white/80">Buscá por nombre, especialidad o palabra clave y encontrá el perfil profesional que necesitás.</p>
+    <div class="mt-6 max-w-2xl relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+      <label for="q" class="sr-only">Buscar egresados</label>
+      <input id="q" type="search" class="field !pl-11 !py-3 text-base text-slate-900" placeholder="Ej.: Penal, Laboral, Civil, Fernández…" autocomplete="off">
+    </div>
+  </div>
+</section>
+
+<section class="bg-white border-b" style="border-color:var(--line)">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
+    <div id="tabs" class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrar por nivel académico"></div>
+    <div class="flex items-center gap-2">
+      <label for="rama" class="text-sm font-semibold whitespace-nowrap">Rama del derecho</label>
+      <select id="rama" class="field !w-auto"></select>
+    </div>
+  </div>
+</section>
+
+<main class="max-w-6xl mx-auto px-4 py-8 flex-1 w-full">
+  <p id="count" class="mb-4 text-sm" style="color:var(--mute)" aria-live="polite"></p>
+  <div id="grid" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+  <div id="empty" class="hidden text-center py-16" style="color:var(--mute)">
+    <i class="fa-regular fa-folder-open text-4xl mb-3"></i>
+    <p class="font-semibold">No encontramos perfiles con esos filtros.</p>
+    <p>Probá con otra palabra o elegí «Todos».</p>
+  </div>
+</main>
+
+<footer class="bg-pd text-white/80 text-sm">
+  <div class="max-w-6xl mx-auto px-4 py-6 text-center">
+    <p class="serif text-white text-base">Prototipo de Plataforma de Egresados — Facultad de Derecho UNCuyo</p>
+    <p class="mt-1">Versión de demostración: los perfiles y contactos que se muestran son ficticios.</p>
+  </div>
+</footer>
+
+<!-- Modal CV -->
+<div id="mCv" class="modal" role="dialog" aria-modal="true" aria-labelledby="cvTitle">
+  <div class="sheet">
+    <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color:var(--line)">
+      <h2 id="cvTitle" class="serif font-semibold text-lg">Currículum (vista previa)</h2>
+      <button class="btn btn-o !py-1" data-close aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="p-5 bg-soft"><div id="cvBody" class="paper"></div></div>
+    <div class="px-5 py-3 flex flex-wrap gap-2 justify-end border-t" style="border-color:var(--line)">
+      <button class="btn btn-p" id="cvDl"><i class="fa-solid fa-download"></i> Descargar PDF (demo)</button>
+      <button class="btn btn-o" data-close>Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Contacto -->
+<div id="mContact" class="modal" role="dialog" aria-modal="true" aria-labelledby="ctTitle">
+  <div class="sheet !max-w-md">
+    <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color:var(--line)">
+      <h2 id="ctTitle" class="serif font-semibold text-lg">Contactar</h2>
+      <button class="btn btn-o !py-1" data-close aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="ctBody" class="p-5 space-y-3"></div>
+  </div>
+</div>
+
+<!-- Modal Crear perfil -->
+<div id="mCreate" class="modal" role="dialog" aria-modal="true" aria-labelledby="crTitle">
+  <div class="sheet">
+    <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color:var(--line)">
+      <h2 id="crTitle" class="serif font-semibold text-lg">Crear mi perfil (Vista previa)</h2>
+      <button class="btn btn-o !py-1" data-close aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="form" class="p-5 grid gap-4" novalidate>
+      <p class="bg-soft rounded-lg px-3 py-2 text-sm">Este formulario es una simulación: el perfil se muestra solo en esta pantalla y desaparece al recargar.</p>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-2"><label class="lb" for="fName">Nombre completo *</label><input id="fName" class="field" required placeholder="Ej.: Julieta Arce Montenegro"></div>
+        <div><label class="lb" for="fYear">Año de egreso *</label><input id="fYear" type="number" min="1950" max="2026" class="field" required placeholder="2018"></div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="lb" for="fRama">Rama principal</label><select id="fRama" class="field"></select></div>
+        <div><label class="lb" for="fEmail">Correo de contacto</label><input id="fEmail" type="email" class="field" placeholder="nombre@estudio.com.ar"></div>
+      </div>
+      <div>
+        <label class="lb" for="fPhoto">Foto (URL) o elegí un avatar de prueba</label>
+        <input id="fPhoto" class="field" placeholder="https://…">
+        <div id="avatars" class="flex gap-2 mt-2"></div>
+      </div>
+      <div><label class="lb" for="fDesc">Descripción profesional</label><textarea id="fDesc" rows="3" maxlength="260" class="field" placeholder="Áreas de trabajo, enfoque y experiencia (máx. 260 caracteres)"></textarea></div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="lb" for="fIg">Instagram del estudio o personal</label><input id="fIg" class="field" placeholder="@miestudio o https://instagram.com/…"></div>
+        <div><label class="lb" for="fCv">Enlace a tu CV (Drive / PDF)</label><input id="fCv" class="field" placeholder="https://drive.google.com/…"></div>
+      </div>
+      <fieldset class="border rounded-lg p-3" style="border-color:var(--line)">
+        <legend class="font-semibold text-sm px-1">Posgrados</legend>
+        <div id="posRows" class="grid gap-2"></div>
+        <button type="button" id="addPos" class="btn btn-o !py-1.5 mt-3 text-sm"><i class="fa-solid fa-plus"></i> Agregar otro título</button>
+      </fieldset>
+      <p id="fErr" class="text-red-700 text-sm hidden"></p>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-o" data-close>Cancelar</button>
+        <button type="submit" class="btn btn-a"><i class="fa-solid fa-paper-plane"></i> Enviar perfil de prueba</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"><div class="bg-pd text-white rounded-lg px-4 py-3 shadow-xl flex gap-3 items-start"><i class="fa-solid fa-circle-check mt-1"></i><span id="toastTxt"></span></div></div>
+
+<script>
+const RAMAS=['Derecho Penal','Civil y Comercial','Laboral','Familia','Administrativo','General'];
+const TIPOS=['Especialización','Maestría','Doctorado'];
+const ph=(n)=>`https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&size=240&background=14284B&color=fff&bold=true`;
+
+// Datos ficticios (en memoria)
+const profiles=[
+ {id:1,n:'Lucía Fernández Ortega',g:'f',mat:'4521',y:2019,rama:'Familia',pos:[],ig:'estudio.fernandezortega',
+  d:'Abogada independiente en Mendoza. Acompaña divorcios, alimentos y cuidado personal, priorizando los acuerdos y la mediación.',
+  mail:'lucia@fernandezortega.com.ar',tel:'261 555-0142',exp:['Estudio Fernández Ortega — Abogada titular (2021 – actualidad)','Estudio Videla & Asoc. — Abogada junior (2019 – 2021)'],photo:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&h=300&fit=crop&crop=faces'},
+ {id:2,n:'Matías Gómez Videla',g:'m',mat:'5103',y:2021,rama:'Laboral',pos:[],ig:'gomezvidela.laboral',
+  d:'Recién recibido, con práctica en reclamos laborales, accidentes de trabajo y asesoramiento a pymes mendocinas.',
+  mail:'matias.gomez@estudiogv.com.ar',tel:'261 555-0177',exp:['Estudio Gómez Videla — Abogado (2022 – actualidad)','Pasantía en Juzgado Laboral — Mendoza (2020 – 2021)'],photo:'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop&crop=faces'},
+ {id:3,n:'Carolina Sosa Aguirre',g:'f',mat:'3388',y:2014,rama:'Civil y Comercial',pos:[{t:'Especialización',n:'Derecho Procesal Civil'}],ig:'sosaaguirre.abogados',
+  d:'Litigio civil y comercial: contratos, daños, sociedades y ejecuciones. Docente adscripta en Derecho Procesal.',
+  mail:'csosa@sosaaguirre.com.ar',tel:'261 555-0120',exp:['Sosa Aguirre Abogados — Socia (2017 – actualidad)','Docente adscripta — Derecho Procesal Civil, UNCuyo (2016 – 2022)'],photo:'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&h=300&fit=crop&crop=faces'},
+ {id:4,n:'Federico Ruiz Lamas',g:'m',mat:'3012',y:2012,rama:'Administrativo',pos:[{t:'Especialización',n:'Derecho Administrativo'}],ig:'ruizlamas.estudio',
+  d:'Asesor de municipios y empresas en contrataciones públicas, empleo público y responsabilidad del Estado.',
+  mail:'fruiz@ruizlamas.com.ar',tel:'261 555-0166',exp:['Asesoría Legal Municipal — Mendoza (2013 – 2019)','Estudio Ruiz Lamas — Socio fundador (2019 – actualidad)'],photo:'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop&crop=faces'},
+ {id:5,n:'Valeria Cuello Benegas',g:'f',mat:'2764',y:2010,rama:'Derecho Penal',pos:[{t:'Maestría',n:'Derecho Penal'}],ig:'cuellobenegas.penal',
+  d:'Defensa penal y litigación oral. Trabaja en delitos económicos y violencia de género con perspectiva de derechos humanos.',
+  mail:'vcuello@cuellobenegas.com.ar',tel:'261 555-0191',exp:['Ministerio Público de la Defensa — Defensora (2011 – 2018)','Estudio Cuello Benegas — Titular (2018 – actualidad)'],photo:'https://images.unsplash.com/photo-1594744803329-e58b31de8bf2?w=300&h=300&fit=crop&crop=faces'},
+ {id:6,n:'Gonzalo Pereyra Mayorga',g:'m',mat:'1890',y:2003,rama:'General',pos:[{t:'Doctorado',n:'Derecho'}],ig:'pereyramayorga',
+  d:'Profesor e investigador en teoría del derecho y derecho constitucional. Autor de artículos en revistas jurídicas argentinas.',
+  mail:'gpereyra@uncu.example',tel:'261 555-0105',exp:['Profesor Titular — Facultad de Derecho, UNCuyo (2012 – actualidad)','Investigador — Instituto de Derecho Público (2008 – actualidad)'],photo:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=faces'}
+];
+
+const st={q:'',nivel:'todos',rama:'Todas',admin:false};
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lvl=(p)=>!p.pos.length?'general':p.pos.some(x=>x.t==='Doctorado')?'doctorado':p.pos.some(x=>x.t==='Maestría')?'maestria':'especializacion';
+const NIVELES=[['todos','Todos'],['general','Nivel General'],['especializacion','Con Especialización'],['maestria','Con Maestría'],['doctorado','Con Doctorado']];
+const bcls={Especialización:'b-e',Maestría:'b-m',Doctorado:'b-d'};
+const badges=(p)=>p.pos.length?p.pos.map(x=>`<span class="badge ${bcls[x.t]}">${esc(x.t)} en ${esc(x.n)}</span>`).join(''):`<span class="badge b-g">${p.g==='f'?'Abogada':p.g==='m'?'Abogado':'Abogado/a'} – Nivel General</span>`;
+const igHandle=(v)=>{v=(v||'').trim();if(!v)return null;const h=v.replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/^@/,'').replace(/\/.*$/,'').replace(/\?.*$/,'');return h?{h,url:'https://instagram.com/'+encodeURIComponent(h)}:null};
+const visible=()=>profiles.filter(p=>{
+  if(p.hidden&&!st.admin)return false;
+  if(st.nivel!=='todos'&&lvl(p)!==st.nivel)return false;
+  if(st.rama!=='Todas'&&p.rama!==st.rama)return false;
+  if(st.q){const t=[p.n,p.d,p.rama,p.y,p.pos.map(x=>x.t+' '+x.n).join(' ')].join(' ').toLowerCase();
+    const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(!norm(t).includes(norm(st.q.toLowerCase())))return false;}
+  return true;});
+
+function renderTabs(){
+  const base=profiles.filter(p=>!p.hidden||st.admin);
+  $('#tabs').innerHTML=NIVELES.map(([k,l])=>{
+    const c=k==='todos'?base.length:base.filter(p=>lvl(p)===k).length;
+    return `<button class="tab" data-n="${k}" aria-pressed="${st.nivel===k}">${l}<small>${c}</small></button>`}).join('');
+}
+function render(){
+  renderTabs();
+  const list=visible();
+  $('#count').textContent=list.length===1?'1 perfil encontrado':`${list.length} perfiles encontrados`;
+  $('#empty').classList.toggle('hidden',list.length>0);
+  $('#grid').innerHTML=list.map(p=>{
+    const ig=igHandle(p.ig);
+    return `<article class="card ${p.hidden?'opacity-60':''}">
+    <div class="p-5 flex gap-4">
+      <img src="${esc(p.photo||ph(p.n))}" alt="Foto de ${esc(p.n)}" class="w-20 h-20 rounded-xl object-cover bg-slate-200 shrink-0" loading="lazy" onerror="this.onerror=null;this.src='${ph(p.n)}'">
+      <div class="min-w-0">
+        <h3 class="serif font-semibold text-lg leading-snug">${esc(p.n)}</h3>
+        <p class="text-sm" style="color:var(--mute)">${p.mat?'Mat. '+esc(p.mat)+' — ':''}Egreso ${esc(p.y)}</p>
+        ${p.isNew?'<span class="badge bg-soft tx-p mt-1">Vista previa</span>':''}${p.hidden?'<span class="badge b-g mt-1">Oculto al público</span>':''}
+      </div>
+    </div>
+    <div class="px-5 flex flex-wrap gap-1.5">${badges(p)}</div>
+    <p class="px-5 pt-3 text-[.95rem] leading-relaxed flex-1">${esc(p.d)||'<span style="color:var(--mute)">Sin descripción.</span>'}</p>
+    <div class="p-5 pt-4 grid gap-2">
+      <div class="grid grid-cols-2 gap-2">
+        <button class="btn btn-p" data-cv="${p.id}"><i class="fa-regular fa-file-pdf"></i> Ver CV</button>
+        <button class="btn btn-o" data-ct="${p.id}"><i class="fa-regular fa-envelope"></i> Contactar</button>
+      </div>
+      ${ig?`<a class="btn btn-o" href="${ig.url}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram"></i> @${esc(ig.h)}</a>`:''}
+      ${st.admin?`<div class="grid grid-cols-2 gap-2 pt-2 border-t" style="border-color:var(--line)">
+        <button class="btn btn-ghost !text-slate-700 !border-slate-300" data-edit="${p.id}"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button class="btn btn-ghost !text-slate-700 !border-slate-300" data-hide="${p.id}"><i class="fa-solid ${p.hidden?'fa-eye':'fa-eye-slash'}"></i> ${p.hidden?'Mostrar':'Ocultar'} perfil</button></div>`:''}
+    </div></article>`}).join('');
+}
+
+// Modales y avisos
+let toastT;
+function toast(m){$('#toastTxt').textContent=m;$('#toast').classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>$('#toast').classList.remove('show'),5500)}
+let lastFocus;
+const open=(id)=>{lastFocus=document.activeElement;$(id).classList.add('open');document.body.style.overflow='hidden';const f=$(id).querySelector('input,button');f&&f.focus()};
+const closeAll=()=>{document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'));document.body.style.overflow='';lastFocus&&lastFocus.focus&&lastFocus.focus()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('mousedown',e=>{if(e.target===m)closeAll()}));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeAll));
+
+function showCv(p){
+  const ig=igHandle(p.ig);
+  const exp=(p.exp&&p.exp.length)?p.exp:['Experiencia profesional a completar en la versión final.'];
+  $('#cvBody').innerHTML=`
+    <div class="border-b pb-3 mb-4" style="border-color:var(--line)">
+      <div class="serif text-2xl font-bold tx-p">${esc(p.n)}</div>
+      <div class="text-sm" style="color:var(--mute)">${p.mat?'Matrícula '+esc(p.mat)+' — ':''}Egreso ${esc(p.y)} — Rama: ${esc(p.rama)}</div>
+    </div>
+    <h4 class="serif font-semibold tx-a mb-1">Perfil profesional</h4><p class="text-sm mb-4">${esc(p.d)}</p>
+    <h4 class="serif font-semibold tx-a mb-1">Formación</h4>
+    <ul class="text-sm mb-4 list-disc pl-5"><li>Abogacía — Facultad de Derecho, Universidad Nacional de Cuyo (${esc(p.y)})</li>${p.pos.map(x=>`<li>${esc(x.t)} en ${esc(x.n)}</li>`).join('')}</ul>
+    <h4 class="serif font-semibold tx-a mb-1">Experiencia</h4>
+    <ul class="text-sm mb-4 list-disc pl-5">${exp.map(e=>`<li>${esc(e)}</li>`).join('')}</ul>
+    <h4 class="serif font-semibold tx-a mb-1">Contacto</h4>
+    <p class="text-sm">${esc(p.mail||'—')}${p.tel?' — '+esc(p.tel):''}${ig?' — Instagram @'+esc(ig.h):''}</p>
+    ${p.cv?`<p class="text-sm mt-3"><a class="tx-a underline" href="${esc(p.cv)}" target="_blank" rel="noopener noreferrer">Abrir CV cargado por el egresado</a></p>`:''}`;
+  $('#cvDl').onclick=()=>toast('Demostración: en la versión final se descargará el PDF del egresado.');
+  open('#mCv');
+}
+function showContact(p){
+  const mail=p.mail||'contacto@ejemplo.com.ar';
+  const wa=p.tel?'https://wa.me/549'+p.tel.replace(/\D/g,'').replace(/^0+/,''):null;
+  $('#ctTitle').textContent='Contactar a '+p.n;
+  $('#ctBody').innerHTML=`<p class="text-sm bg-soft rounded-lg px-3 py-2">Datos de contacto simulados para la demostración.</p>
+   <a class="btn btn-o w-full justify-start" href="mailto:${esc(mail)}"><i class="fa-regular fa-envelope"></i> ${esc(mail)}</a>
+   ${wa?`<a class="btn btn-a w-full justify-start" href="${wa}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> WhatsApp ${esc(p.tel)}</a>`:''}`;
+  open('#mContact');
+}
+
+// Eventos de la grilla y filtros
+$('#grid').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const id=+(b.dataset.cv||b.dataset.ct||b.dataset.edit||b.dataset.hide);const p=profiles.find(x=>x.id===id);if(!p)return;
+  if(b.dataset.cv)showCv(p);
+  else if(b.dataset.ct)showContact(p);
+  else if(b.dataset.edit)toast('Demostración: acá la Secretaría podrá editar los datos del perfil.');
+  else if(b.dataset.hide){p.hidden=!p.hidden;toast(p.hidden?'Perfil oculto: ya no se muestra al público (demo).':'Perfil visible nuevamente (demo).');render()}
+});
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-n]');if(b){st.nivel=b.dataset.n;render()}});
+$('#q').addEventListener('input',e=>{st.q=e.target.value.trim();render()});
+$('#rama').innerHTML=['Todas',...RAMAS].map(r=>`<option value="${r}">${r==='Todas'?'Todas las ramas':r}</option>`).join('');
+$('#rama').addEventListener('change',e=>{st.rama=e.target.value;render()});
+$('#fRama').innerHTML=RAMAS.map(r=>`<option>${r}</option>`).join('');
+$('#theme').addEventListener('change',e=>document.documentElement.dataset.theme=e.target.value);
+$('#adminBtn').addEventListener('click',e=>{
+  st.admin=!st.admin;const b=e.currentTarget;b.setAttribute('aria-pressed',st.admin);
+  b.classList.toggle('btn-p',st.admin);b.classList.toggle('btn-o',!st.admin);
+  b.querySelector('span').textContent=st.admin?'Salir de Admin (Demo)':'Acceso Admin (Demo)';
+  toast(st.admin?'Modo administrador de demostración: ahora ves Editar y Ocultar en cada tarjeta.':'Saliste del modo administrador.');render();
+});
+
+// Formulario de perfil
+const rowHtml=()=>`<div class="grid grid-cols-1 sm:grid-cols-[11rem_1fr_auto] gap-2 pos-row">
+  <select class="field pos-t" aria-label="Tipo de posgrado"><option value="">Ninguno (Nivel General)</option>${TIPOS.map(t=>`<option>${t}</option>`).join('')}</select>
+  <input class="field pos-n" placeholder="Nombre del título (ej.: Derecho Penal)" disabled aria-label="Nombre del título">
+  <button type="button" class="btn btn-o pos-x" aria-label="Quitar título"><i class="fa-solid fa-trash"></i></button></div>`;
+const resetRows=()=>{$('#posRows').innerHTML=rowHtml()};
+$('#addPos').addEventListener('click',()=>$('#posRows').insertAdjacentHTML('beforeend',rowHtml()));
+$('#posRows').addEventListener('change',e=>{if(e.target.classList.contains('pos-t')){const n=e.target.closest('.pos-row').querySelector('.pos-n');n.disabled=!e.target.value;if(!e.target.value)n.value=''}});
+$('#posRows').addEventListener('click',e=>{const x=e.target.closest('.pos-x');if(x){const rows=document.querySelectorAll('.pos-row');rows.length>1?x.closest('.pos-row').remove():resetRows()}});
+const AV=['14284B','0F7B5F','7A5C14','5B2A5E'];
+const drawAv=()=>{$('#avatars').innerHTML=AV.map(c=>{const u=`https://ui-avatars.com/api/?name=${encodeURIComponent($('#fName').value||'Egresado')}&size=240&background=${c}&color=fff&bold=true`;return `<button type="button" class="rounded-lg overflow-hidden border w-12 h-12" style="border-color:var(--line)" data-u="${u}" aria-label="Usar este avatar"><img src="${u}" alt="" class="w-full h-full"></button>`}).join('')};
+$('#avatars').addEventListener('click',e=>{const b=e.target.closest('[data-u]');if(b)$('#fPhoto').value=b.dataset.u});
+$('#fName').addEventListener('input',drawAv);
+$('#createBtn').addEventListener('click',()=>{$('#fErr').classList.add('hidden');drawAv();open('#mCreate')});
+$('#form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const n=$('#fName').value.trim(),y=parseInt($('#fYear').value,10),err=$('#fErr');
+  if(n.length<5||!n.includes(' ')){err.textContent='Ingresá tu nombre y apellido completos.';err.classList.remove('hidden');return}
+  if(!(y>=1950&&y<=2026)){err.textContent='Ingresá un año de egreso entre 1950 y 2026.';err.classList.remove('hidden');return}
+  const pos=[];let incompleto=false;
+  document.querySelectorAll('.pos-row').forEach(r=>{const t=r.querySelector('.pos-t').value,nm=r.querySelector('.pos-n').value.trim();if(t){nm?pos.push({t,n:nm}):incompleto=true}});
+  if(incompleto){err.textContent='Completá el nombre de cada posgrado elegido, o seleccioná «Ninguno».';err.classList.remove('hidden');return}
+  const cv=$('#fCv').value.trim();
+  profiles.unshift({id:Date.now(),isNew:true,n,y,mat:'',rama:$('#fRama').value,pos,ig:$('#fIg').value,cv:/^https?:\/\//i.test(cv)?cv:'',
+    d:$('#fDesc').value.trim(),mail:$('#fEmail').value.trim(),tel:'',exp:[],photo:/^https?:\/\//i.test($('#fPhoto').value.trim())?$('#fPhoto').value.trim():ph(n)});
+  $('#form').reset();resetRows();st.q='';st.nivel='todos';st.rama='Todas';$('#q').value='';$('#rama').value='Todas';
+  closeAll();render();
+  toast('Perfil agregado en modo demostración (en la versión final se guardará en la base de datos previa aprobación).');
+  $('#grid').scrollIntoView({behavior:'smooth',block:'start'});
+});
+
+resetRows();render();
+</script>
+</body>
+</html>
