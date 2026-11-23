@@ -82,9 +82,9 @@ label.lb{display:block;font-weight:600;font-size:.88rem;margin-bottom:.25rem}
 </section>
 
 <section class="bg-white border-b" style="border-color:var(--line)">
-  <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row md:items-center gap-3 justify-between">
-    <div id="tabs" class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtrar por nivel académico"></div>
-    <div class="flex items-center gap-2">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-3">
+    <div id="tabs" class="flex flex-wrap gap-2" role="group" aria-label="Filtrar por nivel académico"></div>
+    <div class="flex flex-wrap items-center gap-2 pt-3 border-t" style="border-color:var(--line)">
       <label for="rama" class="text-sm font-semibold whitespace-nowrap">Rama del derecho</label>
       <select id="rama" class="field !w-auto"></select>
     </div>
@@ -152,7 +152,14 @@ label.lb{display:block;font-weight:600;font-size:.88rem;margin-bottom:.25rem}
       </div>
       <div><label class="lb" for="fEmail">Correo de contacto</label><input id="fEmail" type="email" class="field" placeholder="nombre@estudio.com.ar"></div>
       <div>
-        <label class="lb" for="fPhoto">Foto (URL) o elegí un avatar de prueba</label>
+        <label class="lb" for="fFile">Foto de perfil</label>
+        <div class="flex items-center gap-3">
+          <img id="photoPrev" src="" alt="Vista previa de la foto elegida" class="w-16 h-16 rounded-xl object-cover bg-slate-200 hidden">
+          <input id="fFile" type="file" accept="image/*" class="text-sm min-w-0 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-semibold file:cursor-pointer">
+          <button type="button" id="photoClear" class="text-sm underline hidden" style="color:var(--mute)">Quitar</button>
+        </div>
+        <p id="photoErr" class="text-sm text-red-700 hidden mt-1"></p>
+        <label class="lb mt-3" for="fPhoto">O pegá el enlace de una imagen, o elegí un avatar de prueba</label>
         <input id="fPhoto" class="field" placeholder="https://…">
         <div id="avatars" class="flex gap-2 mt-2"></div>
       </div>
@@ -182,6 +189,8 @@ label.lb{display:block;font-weight:600;font-size:.88rem;margin-bottom:.25rem}
 const RAMAS=['Derecho Penal','Civil y Comercial','Laboral','Familia','Administrativo','Propiedad Horizontal y Consorcios','General'];
 const TIPOS=['Tecnicatura','Especialización','Maestría','Doctorado'];
 const TEC_N='Administración de Edificios de Propiedad Horizontal y Conjuntos Inmobiliarios';
+const normUrl=(v)=>{v=(v||'').trim();if(!v)return '';if(/^https?:\/\//i.test(v))return v;return /^[\w-]+(\.[\w-]+)+(\/|$)/.test(v)?'https://'+v:''};
+let photoData='';
 const ph=(n)=>`https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&size=240&background=14284B&color=fff&bold=true`;
 
 // Datos ficticios (en memoria)
@@ -305,7 +314,9 @@ function showCv(p){
     <h4 class="serif font-semibold tx-a mb-1">Contacto</h4>
     <p class="text-sm">${esc(p.mail||'—')}${p.tel?' — '+esc(p.tel):''}${ig?' — Instagram @'+esc(ig.h):''}</p>
     ${p.cv?`<p class="text-sm mt-3"><a class="tx-a underline" href="${esc(p.cv)}" target="_blank" rel="noopener noreferrer">Abrir CV cargado por el egresado</a></p>`:''}`;
-  $('#cvDl').onclick=()=>toast('Demostración: en la versión final se descargará el PDF del egresado.');
+  const dl=$('#cvDl');
+  dl.innerHTML=p.cv?'<i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir CV cargado':'<i class="fa-solid fa-download"></i> Descargar PDF (demo)';
+  dl.onclick=()=>p.cv?window.open(p.cv,'_blank','noopener'):toast('Demostración: en la versión final se descargará el PDF del egresado.');
   open('#mCv');
 }
 function showContact(p){
@@ -354,7 +365,21 @@ $('#posRows').addEventListener('change',e=>{if(e.target.classList.contains('pos-
 $('#posRows').addEventListener('click',e=>{const x=e.target.closest('.pos-x');if(x){const rows=document.querySelectorAll('.pos-row');rows.length>1?x.closest('.pos-row').remove():resetRows()}});
 const AV=['14284B','0F7B5F','7A5C14','5B2A5E'];
 const drawAv=()=>{$('#avatars').innerHTML=AV.map(c=>{const u=`https://ui-avatars.com/api/?name=${encodeURIComponent($('#fName').value||'Egresado')}&size=240&background=${c}&color=fff&bold=true`;return `<button type="button" class="rounded-lg overflow-hidden border w-12 h-12" style="border-color:var(--line)" data-u="${u}" aria-label="Usar este avatar"><img src="${u}" alt="" class="w-full h-full"></button>`}).join('')};
-$('#avatars').addEventListener('click',e=>{const b=e.target.closest('[data-u]');if(b)$('#fPhoto').value=b.dataset.u});
+const setPhoto=(d)=>{photoData=d;const i=$('#photoPrev');i.src=d||'';i.classList.toggle('hidden',!d);$('#photoClear').classList.toggle('hidden',!d)};
+$('#avatars').addEventListener('click',e=>{const b=e.target.closest('[data-u]');if(b){setPhoto('');$('#fFile').value='';$('#fPhoto').value=b.dataset.u}});
+$('#fPhoto').addEventListener('input',()=>{if($('#fPhoto').value){setPhoto('');$('#fFile').value=''}});
+$('#photoClear').addEventListener('click',()=>{setPhoto('');$('#fFile').value=''});
+$('#fFile').addEventListener('change',e=>{
+  const f=e.target.files[0],er=$('#photoErr');er.classList.add('hidden');if(!f)return;
+  if(!f.type.startsWith('image/')){er.textContent='El archivo tiene que ser una imagen (JPG, PNG o WebP).';er.classList.remove('hidden');e.target.value='';return}
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();
+    im.onload=()=>{const S=320,c=document.createElement('canvas');c.width=c.height=S;
+      const m=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);
+      setPhoto(c.toDataURL('image/jpeg',.85));$('#fPhoto').value=''};
+    im.onerror=()=>{er.textContent='No pudimos leer esa imagen. Probá con otra.';er.classList.remove('hidden')};
+    im.src=r.result};
+  r.readAsDataURL(f)});
 $('#fName').addEventListener('input',drawAv);
 $('#createBtn').addEventListener('click',()=>{$('#fErr').classList.add('hidden');drawAv();open('#mCreate')});
 $('#form').addEventListener('submit',e=>{
@@ -368,10 +393,10 @@ $('#form').addEventListener('submit',e=>{
   const cv=$('#fCv').value.trim();
   const tecOnly=$('#fTecOnly').checked;
   if(tecOnly&&!pos.some(x=>x.t==='Tecnicatura')){err.textContent='Indicaste que tu título base es la Tecnicatura: agregala en la lista de formación.';err.classList.remove('hidden');return}
-  profiles.unshift({id:Date.now(),isNew:true,estado:'pendiente',tecOnly,n,y,mat:$('#fMat').value.trim(),rama:$('#fRama').value,pos,ig:$('#fIg').value,cv:/^https?:\/\//i.test(cv)?cv:'',
-    d:$('#fDesc').value.trim(),mail:$('#fEmail').value.trim(),tel:'',exp:[],photo:/^https?:\/\//i.test($('#fPhoto').value.trim())?$('#fPhoto').value.trim():ph(n)});
+  profiles.unshift({id:Date.now(),isNew:true,estado:'pendiente',tecOnly,n,y,mat:$('#fMat').value.trim(),rama:$('#fRama').value,pos,ig:$('#fIg').value,cv:normUrl(cv),
+    d:$('#fDesc').value.trim(),mail:$('#fEmail').value.trim(),tel:'',exp:[],photo:photoData||normUrl($('#fPhoto').value)||ph(n)});
   st.onlyPend=false;
-  $('#form').reset();resetRows();st.q='';st.nivel='todos';st.rama='Todas';$('#q').value='';$('#rama').value='Todas';
+  $('#form').reset();setPhoto('');resetRows();st.q='';st.nivel='todos';st.rama='Todas';$('#q').value='';$('#rama').value='Todas';
   closeAll();render();
   toast('Perfil enviado en modo demostración: queda en proceso de aprobación. En la versión final se guardará en la base de datos recién cuando la Secretaría lo apruebe.');
   $('#grid').scrollIntoView({behavior:'smooth',block:'start'});
