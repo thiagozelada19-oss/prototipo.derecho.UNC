@@ -83,8 +83,9 @@ label.lb{display:block;font-weight:600;font-size:.88rem;margin-bottom:.25rem}
 
 <section class="bg-white border-b" style="border-color:var(--line)">
   <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-3">
-    <div id="tabs" class="flex flex-wrap gap-2" role="group" aria-label="Filtrar por nivel académico"></div>
-    <div class="flex flex-wrap items-center gap-2 pt-3 border-t" style="border-color:var(--line)">
+    <div id="tabs" class="flex flex-wrap gap-2" role="group" aria-label="Filtrar por carrera"></div>
+    <div id="subTabs" class="hidden flex-wrap items-center gap-2 pl-3 border-l-4" style="border-color:var(--a)" role="group" aria-label="Filtrar por tipo de abogacía"></div>
+    <div id="ramaRow" class="flex flex-wrap items-center gap-2 pt-3 border-t" style="border-color:var(--line)">
       <label for="rama" class="text-sm font-semibold whitespace-nowrap">Área de ejercicio</label>
       <select id="rama" class="field !w-auto"></select>
     </div>
@@ -238,17 +239,19 @@ const profiles=[
   mail:'ctorres@escribaniatn.com.ar',tel:'261 555-0153',exp:['Escribanía Torres Navarro — Titular del Registro Notarial N.º 412 (2020 – actualidad)','Adscripta a registro notarial — Mendoza (2016 – 2020)']}
 ];
 
-const st={q:'',nivel:'todos',rama:'Todas',admin:false,onlyPend:false};
+const st={q:'',carr:'todos',nivel:'todos',rama:'Todas',admin:false,onlyPend:false};
 const $=(s)=>document.querySelector(s);
 const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const est=(p)=>p.estado||'aprobado';
 const pub=(p)=>st.admin||(!p.hidden&&est(p)!=='rechazado');
-const NIVELES=[['todos','Todos'],['general','Nivel General'],['tecnicatura','Con Tecnicatura'],['escribania','Con Escribanía'],['especializacion','Con Especialización'],['maestria','Con Maestría'],['doctorado','Con Doctorado']];
+const CARRS=[['todos','Todos'],['abogacia','Abogacía'],['tecnicatura','Tecnicatura'],['escribania','Escribanía']];
+const SUBN=[['todos','Todos los tipos'],['general','Nivel General'],['especializacion','Con Especialización'],['maestria','Con Maestría'],['doctorado','Con Doctorado']];
 const TIPO_DE={tecnicatura:'Tecnicatura',especializacion:'Especialización',maestria:'Maestría',doctorado:'Doctorado'};
 const car=(p)=>p.carrera||'abogacia';
 const matLbl=(p)=>car(p)==='escribania'?'Reg. Notarial N.º ':'Mat. ';
 const gen=(p,f,m,x)=>p.g==='f'?f:p.g==='m'?m:x;
-const matchN=(p,k)=>k==='todos'||(k==='general'?car(p)==='abogacia'&&!p.pos.length:k==='tecnicatura'?car(p)==='tecnicatura':k==='escribania'?car(p)==='escribania':p.pos.some(x=>x.t===TIPO_DE[k]));
+const matchC=(p,k)=>k==='todos'||car(p)===k;
+const matchN=(p,k)=>k==='todos'||(k==='general'?!p.pos.length:p.pos.some(x=>x.t===TIPO_DE[k]));
 const bcls={Tecnicatura:'b-t',Especialización:'b-e',Maestría:'b-m',Doctorado:'b-d'};
 const titulo=(x)=>x.t==='Tecnicatura'?`Tecnicatura Universitaria en ${x.n}`:`${x.t} en ${x.n}`;
 const badges=(p)=>{const b=p.pos.map(x=>`<span class="badge ${bcls[x.t]}">${esc(titulo(x))}</span>`).join('');
@@ -258,7 +261,8 @@ const igHandle=(v)=>{v=(v||'').trim();if(!v)return null;const h=v.replace(/^http
 const visible=()=>profiles.filter(p=>{
   if(!pub(p))return false;
   if(st.onlyPend&&est(p)!=='pendiente')return false;
-  if(!matchN(p,st.nivel))return false;
+  if(!matchC(p,st.carr))return false;
+  if(st.carr==='abogacia'&&!matchN(p,st.nivel))return false;
   if(st.rama!=='Todas'&&p.rama!==st.rama)return false;
   if(st.q){const t=[p.n,p.d,p.rama,p.y,car(p),p.pos.map(titulo).join(' ')].join(' ').toLowerCase();
     const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -267,9 +271,10 @@ const visible=()=>profiles.filter(p=>{
 
 function renderTabs(){
   const base=profiles.filter(pub);
-  $('#tabs').innerHTML=NIVELES.map(([k,l])=>{
-    const c=base.filter(p=>matchN(p,k)).length;
-    return `<button class="tab" data-n="${k}" aria-pressed="${st.nivel===k}">${l}<small>${c}</small></button>`}).join('');
+  $('#tabs').innerHTML=CARRS.map(([k,l])=>`<button class="tab" data-c="${k}" aria-pressed="${st.carr===k}">${l}<small>${base.filter(p=>matchC(p,k)).length}</small></button>`).join('');
+  const sub=$('#subTabs');sub.classList.toggle('hidden',st.carr!=='abogacia');sub.classList.toggle('flex',st.carr==='abogacia');
+  if(st.carr==='abogacia')sub.innerHTML='<span class="text-sm font-semibold mr-1">Tipo de abogacía:</span>'+SUBN.map(([k,l])=>`<button class="tab" data-n="${k}" aria-pressed="${st.nivel===k}">${l}<small>${base.filter(p=>car(p)==='abogacia'&&matchN(p,k)).length}</small></button>`).join('');
+  $('#ramaRow').classList.toggle('hidden',st.carr==='tecnicatura'||st.carr==='escribania');
 }
 function renderBar(){
   const bar=$('#adminBar');bar.classList.toggle('hidden',!st.admin);if(!st.admin)return;
@@ -365,7 +370,11 @@ $('#grid').addEventListener('click',e=>{
   else if(b.dataset.hide){p.hidden=!p.hidden;toast(p.hidden?'Perfil oculto: ya no se muestra al público (demo).':'Perfil visible nuevamente (demo).');render()}
 });
 $('#adminBar').addEventListener('click',e=>{if(e.target.closest('[data-pend]')){st.onlyPend=!st.onlyPend;render()}});
-$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-n]');if(b){st.nivel=b.dataset.n;render()}});
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;
+  st.carr=b.dataset.c;st.nivel='todos';
+  if(st.carr==='tecnicatura'||st.carr==='escribania'){st.rama='Todas';$('#rama').value='Todas'}
+  render()});
+$('#subTabs').addEventListener('click',e=>{const b=e.target.closest('[data-n]');if(b){st.nivel=b.dataset.n;render()}});
 $('#q').addEventListener('input',e=>{st.q=e.target.value.trim();render()});
 $('#rama').innerHTML=['Todas',...RAMAS].map(r=>`<option value="${r}">${r==='Todas'?'Todas las ramas':r}</option>`).join('');
 $('#rama').addEventListener('change',e=>{st.rama=e.target.value;render()});
@@ -438,7 +447,7 @@ $('#form').addEventListener('submit',e=>{
   profiles.unshift({id:Date.now(),isNew:true,estado:'pendiente',carrera:C,n,y,mat:$('#fMat').value.trim(),rama:C==='abogacia'?$('#fRama').value:CARRERAS[C].rama,pos,ig:$('#fIg').value,cv:normUrl(cv),
     d:$('#fDesc').value.trim(),mail:$('#fEmail').value.trim(),tel:'',exp:[],photo:photoData||normUrl($('#fPhoto').value)||ph(n)});
   st.onlyPend=false;
-  $('#form').reset();setPhoto('');resetRows();st.q='';st.nivel='todos';st.rama='Todas';$('#q').value='';$('#rama').value='Todas';
+  $('#form').reset();setPhoto('');resetRows();st.q='';st.nivel='todos';st.carr='todos';st.rama='Todas';$('#q').value='';$('#rama').value='Todas';
   closeAll();render();
   toast('Perfil enviado en modo demostración: queda en proceso de aprobación. En la versión final se guardará en la base de datos recién cuando la Secretaría lo apruebe.');
   $('#grid').scrollIntoView({behavior:'smooth',block:'start'});
